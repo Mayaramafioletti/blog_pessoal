@@ -1,5 +1,6 @@
 package com.blogPessoal.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,36 +28,46 @@ public class UsuarioController {
 	@Autowired
 	private UsuarioRepository repository;
 	
-	
 	@Autowired
 	private UsuarioService usuarioService;
+
+	@GetMapping
+	public ResponseEntity<List<Usuario>> GetAll() {
+		return ResponseEntity.ok(repository.findAll());
+	}
 
 	@PostMapping("/logar")
 	public ResponseEntity<UserLogin> Autentication(@RequestBody Optional<UserLogin> user) {
 		return usuarioService.Logar(user).map(resp -> ResponseEntity.ok(resp))
 				.orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
 	}
-	
+
 	@GetMapping("/{id}")
 	public ResponseEntity<Usuario> GetById(@PathVariable long id) {
 		return repository.findById(id).map(resp -> ResponseEntity.ok(resp)).orElse(ResponseEntity.notFound().build());
 	}
 
+
 	@PostMapping("/cadastrar")
 	public ResponseEntity<Usuario> Post(@RequestBody Usuario usuario) {
-		Optional<Usuario> user = usuarioService.CadastrarUsuario(usuario);
+		Usuario user = usuarioService.validarUser(usuario);
 		try {
-				return ResponseEntity.ok(user.get());
+			return ResponseEntity.ok(user);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().build();
 		}
-		
 	}
 	
 	@PutMapping
-	public ResponseEntity<Usuario> Put(@RequestBody Usuario usuario) {
-		return ResponseEntity.ok(repository.save(usuario));
+	public ResponseEntity<Usuario> Put(@RequestBody Usuario usuario){
+		Usuario user = usuarioService.validarUser(usuario);
+		try {
+			return ResponseEntity.ok(user);
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
 	}
-
+	
+	
 
 }
